@@ -103,14 +103,20 @@ class Backdrop extends Control:
 
 
 class Scanlines extends Control:
+	# Telefonun gercek cozunurlugu oyunun ic cozunurlugunden yuksek oldugu icin
+	# 1 piksellik cizgiler olceklenirken karelerin uzerine kalin seritler
+	# halinde biniyordu ve sayilar okunmaz hale geliyordu. Artik cizgiler
+	# daha seyrek, daha kalin ve cok daha soluk.
 	func _draw() -> void:
 		var a := Skins.scan()
 		if a <= 0.001:
 			return
+		var step := 6.0
+		var thick := 2.0
 		var y := 0.0
 		while y < size.y:
-			draw_rect(Rect2(0.0, y, size.x, 1.0), Color(0, 0, 0, a))
-			y += 3.0
+			draw_rect(Rect2(0.0, y, size.x, thick), Color(0, 0, 0, a))
+			y += step
 
 
 # ============================================================ sahte reklam

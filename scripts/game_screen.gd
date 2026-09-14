@@ -7,6 +7,7 @@ var main
 
 # ---- dugumler ----
 var _board: Control
+var _shake_root: Control
 var _tiles_root: Control
 var _line: Line2D
 var _floats: Control
@@ -104,6 +105,10 @@ func build() -> void:
 	_press_tag = _press_box.get_child(1)
 	hud.add_child(_press_box)
 
+	# Uzun telefonlarda alta buyuk bir bosluk kaliyordu. Esnek bosluklar
+	# tahtayi kalan alanin ortasina yerlestiriyor.
+	v.add_child(_grow_v_spacer())
+
 	# ---------------- kombo ----------------
 	_combo_row = HBoxContainer.new()
 	_combo_row.add_theme_constant_override("separation", 12)
@@ -154,10 +159,18 @@ func build() -> void:
 			slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_board.add_child(slot)
 
+	# Sarsinti icin ayri bir katman. Tahtanin kendisini oynatamiyoruz cunku
+	# bir kapsayicinin cocugu — kapsayici konumu her cizimde geri aliyor ve
+	# sarsinti bitince tahta yukari sicrayip orada kaliyordu.
+	_shake_root = Control.new()
+	_shake_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_shake_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_board.add_child(_shake_root)
+
 	_tiles_root = Control.new()
 	_tiles_root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_tiles_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_board.add_child(_tiles_root)
+	_shake_root.add_child(_tiles_root)
 
 	_line = Line2D.new()
 	_line.width = cell * 0.16
@@ -166,13 +179,13 @@ func build() -> void:
 	_line.begin_cap_mode = Line2D.LINE_CAP_BOX
 	_line.end_cap_mode = Line2D.LINE_CAP_BOX
 	_line.z_index = 10
-	_board.add_child(_line)
+	_shake_root.add_child(_line)
 
 	_floats = Control.new()
 	_floats.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_floats.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_floats.z_index = 20
-	_board.add_child(_floats)
+	_shake_root.add_child(_floats)
 
 	_build_over()
 
@@ -186,24 +199,28 @@ func build() -> void:
 		tel_margin.add_theme_constant_override("margin_" + side, 10)
 	tel_panel.add_child(tel_margin)
 
-	var grid_box := GridContainer.new()
-	grid_box.columns = 3
-	grid_box.add_theme_constant_override("h_separation", 18)
-	grid_box.add_theme_constant_override("v_separation", 4)
-	tel_margin.add_child(grid_box)
+	var tel_box := VBoxContainer.new()
+	tel_box.add_theme_constant_override("separation", 2)
+	tel_margin.add_child(tel_box)
 
 	_tel.clear()
-	for t in ["birleştirme", "ort. zincir", "kombo", "kırılma", "süre", "puan/dk"]:
-		var l := UiKit.body(t + " 0", 15)
-		# Satir kaydirma acik kalirsa kutu dikeyde sisiyor ve tahtayi ekrandan tasiriyor.
+	for i in 2:
+		var l := UiKit.body("", 15)
 		l.autowrap_mode = TextServer.AUTOWRAP_OFF
-		l.clip_text = true
-		l.custom_minimum_size = Vector2(0, 22)
-		grid_box.add_child(l)
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		tel_box.add_child(l)
 		_tel.append(l)
+
+	v.add_child(_grow_v_spacer())
 
 	if _tiles_root != null and not grid.is_empty():
 		_rebuild_tiles()
+
+
+func _grow_v_spacer() -> Control:
+	var c := Control.new()
+	c.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	return c
 
 
 func _grow_spacer() -> Control:
@@ -747,13 +764,14 @@ func _process(delta: float) -> void:
 		else:
 			_press_lbl.text = "%.1f" % time_left
 
-	if shake_time > 0.0:
+	if shake_time > 0.0 and _shake_root:
 		shake_time -= delta
-		var off := Vector2(randf_range(-shake_amp, shake_amp), randf_range(-shake_amp, shake_amp) * 0.4)
-		if _board:
-			_board.get_parent().position = off
-		if shake_time <= 0.0 and _board:
-			_board.get_parent().position = Vector2.ZERO
+		if shake_time <= 0.0:
+			_shake_root.position = Vector2.ZERO
+		else:
+			_shake_root.position = Vector2(
+				randf_range(-shake_amp, shake_amp),
+				randf_range(-shake_amp, shake_amp) * 0.4)
 
 
 func _start_pressure() -> void:
@@ -821,12 +839,10 @@ func _on_share() -> void:
 
 
 func _update_tel() -> void:
-	if _tel.size() < 6:
+	if _tel.size() < 2:
 		return
 	var secs: float = max(0.001, Time.get_ticks_msec() / 1000.0 - m_start)
-	_tel[0].text = "birleştirme %d" % m_merges
-	_tel[1].text = "ort. zincir %.1f" % (float(m_chain_sum) / max(1, m_merges))
-	_tel[2].text = "kombo x%d" % mini(m_best_combo, Cfg.combo_max)
-	_tel[3].text = "kırılma %d" % m_breaks
-	_tel[4].text = "süre %ds" % int(secs)
-	_tel[5].text = "puan/dk %d" % int(score / (secs / 60.0))
+	_tel[0].text = "%d birleştirme · ort zincir %.1f · kombo x%d" % [
+		m_merges, float(m_chain_sum) / max(1, m_merges), mini(m_best_combo, Cfg.combo_max)]
+	_tel[1].text = "%d kırılma · %d sn · %d puan/dk" % [
+		m_breaks, int(secs), int(score / (secs / 60.0))]
