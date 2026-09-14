@@ -5,6 +5,12 @@ extends Node
 
 const COLS := 5
 const ROWS := 7
+
+# --- GELISTIRME AYARLARI — YAYINDAN ONCE IKISINI DE KAPAT ---
+const DEV_MODE := true      # acikken oyuna test jetonu yukluyor
+const DEV_COINS := 100000
+# Ekran sarsintisi. Su an kapali; acmak istersen true yap.
+const shake_enabled := false
 const COIN_PER_SCORE := 400
 const AD_REWARD := 50
 

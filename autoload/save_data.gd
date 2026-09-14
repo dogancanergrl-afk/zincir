@@ -16,6 +16,10 @@ var sfx_on := true
 
 func _ready() -> void:
 	read()
+	# Test icin jeton. Cfg.DEV_MODE yayin surumunde false olacak.
+	if Cfg.DEV_MODE and coins < Cfg.DEV_COINS:
+		coins = Cfg.DEV_COINS
+		write()
 
 
 func read() -> void:

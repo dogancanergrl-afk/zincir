@@ -59,6 +59,7 @@ var key := "retro"
 
 var _pixel_font: FontVariation
 var _body_font: FontVariation
+var _num_font: FontVariation
 
 
 func _ready() -> void:
@@ -74,6 +75,13 @@ func _ready() -> void:
 	_body_font = FontVariation.new()
 	_body_font.base_font = load("res://fonts/Outfit.ttf")
 	_body_font.variation_opentype = {tag: 500}
+
+	# Karelerin uzerindeki sayilar icin ayri ve cok kalin bir font.
+	# Pixelify Sans'in 2 rakami ters S gibi okunuyor; oyunun en cok
+	# bakilan ogesinde okunurluk suslemeden onemli.
+	_num_font = FontVariation.new()
+	_num_font.base_font = load("res://fonts/Outfit.ttf")
+	_num_font.variation_opentype = {tag: 800}
 
 
 func cur() -> Dictionary:
@@ -116,6 +124,10 @@ func ui_font() -> Font:
 
 func body_font() -> Font:
 	return _body_font
+
+
+func num_font() -> Font:
+	return _num_font
 
 
 func apply(k: String) -> void:

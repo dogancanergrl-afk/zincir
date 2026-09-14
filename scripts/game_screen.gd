@@ -424,8 +424,8 @@ func _make_tile(value: int, row: int, col: int, from_row: float) -> Dictionary:
 	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_override("font", Skins.ui_font())
-	lbl.add_theme_color_override("font_color", Color("14141c"))
+	lbl.add_theme_font_override("font", Skins.num_font())
+	lbl.add_theme_color_override("font_color", Color("12121a"))
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	node.add_child(lbl)
 
@@ -729,7 +729,7 @@ func _bump_combo(length: int) -> void:
 	if combo >= 2:
 		_combo_row.modulate.a = 1.0
 		_combo_lbl.text = "COMBO x%d" % _mult()
-	if combo >= 3:
+	if combo >= 3 and Cfg.shake_enabled:
 		shake_time = 0.22
 		shake_amp = min(5.0 + combo * 1.5, 16.0)
 
