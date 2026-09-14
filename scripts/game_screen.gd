@@ -236,8 +236,12 @@ func _stat_box(tag: String, color: Color) -> VBoxContainer:
 	val.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	b.add_child(val)
 	var t := UiKit.body(tag, 13)
+	# Satir kaydirma acik kalinca "SCORE" etiketi "SCOR / E" diye
+	# ikiye bolunuyordu.
+	t.autowrap_mode = TextServer.AUTOWRAP_OFF
 	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	b.add_child(t)
+	b.custom_minimum_size = Vector2(120, 0)
 	return b
 
 
